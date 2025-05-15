@@ -1,16 +1,20 @@
-const CACHE = 'securevoice-v1';
-const FILES = [
-  '/',
-  '/static/script.js',
-  '/static/crypto.js',
-  '/static/service-worker.js',
-  '/templates/index.html'
-];
-
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)));
+self.addEventListener('install', function(e) {
+    e.waitUntil(
+        caches.open('securevoice-cache').then(function(cache) {
+            return cache.addAll([
+                '/',
+                '/static/script.js',
+                '/static/crypto.js',
+                '/templates/index.html'
+            ]);
+        })
+    );
 });
 
-self.addEventListener('fetch', e => {
-  e.respondWith(caches.match(e.request).then(resp => resp || fetch(e.request)));
+self.addEventListener('fetch', function(e) {
+    e.respondWith(
+        caches.match(e.request).then(function(response) {
+            return response || fetch(e.request);
+        })
+    );
 });
