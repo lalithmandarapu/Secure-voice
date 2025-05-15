@@ -1,61 +1,43 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SecureVoice</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background-color: #f4f4f9;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .container {
-      margin-top: 50px;
-    }
-    .output-box {
-      min-height: 150px;
-      padding: 15px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-    }
-    video {
-      border: 2px solid #444;
-      border-radius: 10px;
-      width: 100%;
-      height: auto;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>SecureVoice</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 </head>
-<body>
-  <div class="container">
-    <h1 class="text-center mb-4">SecureVoice Communication Interface</h1>
+<body class="bg-dark text-white">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">SecureVoice Interface</h1>
 
-    <div class="mb-3">
-      <label for="inputMode" class="form-label">Select Input Mode:</label>
-      <select class="form-select" id="inputMode" onchange="switchInputMode()">
-        <option value="voice">Voice Input</option>
-        <option value="gesture">Gesture Input</option>
-      </select>
+        <div class="text-center mb-4">
+            <button class="btn btn-primary" onclick="startVoiceRecognition()">Start Voice Input</button>
+            <button class="btn btn-secondary" onclick="startGestureRecognition()">Start Gesture Input</button>
+        </div>
+
+        <div class="form-group">
+            <label for="inputText">Input Message</label>
+            <textarea id="inputText" class="form-control" rows="2" placeholder="Voice or gesture input will appear here..."></textarea>
+        </div>
+
+        <div class="text-center mt-3">
+            <button class="btn btn-success" onclick="encryptText()">Encrypt</button>
+            <button class="btn btn-warning" onclick="decryptText()">Decrypt</button>
+        </div>
+
+        <div class="mt-4">
+            <label>Encrypted Message</label>
+            <textarea id="encryptedText" class="form-control" rows="2" readonly></textarea>
+
+            <label class="mt-3">Decrypted Message</label>
+            <textarea id="decryptedText" class="form-control" rows="2" readonly></textarea>
+        </div>
+
+        <div class="mt-5 text-center">
+            <video id="gestureVideo" width="320" height="240" autoplay class="d-none"></video>
+        </div>
     </div>
 
-    <div id="voiceSection" class="mb-3">
-      <button class="btn btn-primary" onclick="startListening()">Start Voice Input</button>
-      <div id="voiceInput" class="mt-2 output-box"></div>
-    </div>
-
-    <div id="gestureSection" class="mb-3" style="display: none;">
-      <video id="webcam" autoplay></video>
-      <div id="gestureOutput" class="mt-2 output-box"></div>
-    </div>
-
-    <h5 class="mt-4">Encrypted Text</h5>
-    <div id="encryptedText" class="output-box"></div>
-
-    <h5 class="mt-4">Decrypted Text</h5>
-    <div id="decryptedText" class="output-box"></div>
-  </div>
-
-  <script src="/static/script.js"></script>
+    <script src="/static/script.js"></script>
+    <script src="/static/crypto.js"></script>
 </body>
 </html>
