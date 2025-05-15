@@ -1,54 +1,61 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SecureVoice</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
-</head>
-<body class="p-4">
-  <h1>🔐 SecureVoice</h1>
-
-  <div class="mb-2">
-    <label>Input Mode:</label>
-    <select id="inputMode" class="form-select w-50">
-      <option value="voice">Voice</option>
-      <option value="gesture">Gesture</option>
-    </select>
-  </div>
-
-  <div class="mb-2">
-    <label>Language:</label>
-    <select id="language" class="form-select w-50">
-      <option value="en-US">English</option>
-      <option value="hi-IN">Hindi</option>
-      <option value="es-ES">Spanish</option>
-    </select>
-  </div>
-
-  <button class="btn btn-primary mb-3" onclick="startInput()">Start</button>
-
-  <textarea id="inputText" class="form-control mb-2" rows="2" placeholder="Input Text"></textarea>
-
-  <button class="btn btn-success mb-2" onclick="encryptMessage()">Encrypt</button>
-  <textarea id="encryptedText" class="form-control mb-2" rows="2" readonly placeholder="Encrypted Text"></textarea>
-
-  <button class="btn btn-warning mb-2" onclick="decryptMessage()">Decrypt</button>
-  <textarea id="decryptedText" class="form-control mb-2" rows="2" readonly placeholder="Decrypted Text"></textarea>
-
-  <video id="webcam" width="320" height="240" autoplay muted class="mb-3" style="display:none;"></video>
-
-  <!-- Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-  <script src="{{ url_for('static', filename='crypto.js') }}"></script>
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/static/service-worker.js');
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f4f4f9;
+      font-family: 'Segoe UI', sans-serif;
     }
-  </script>
+    .container {
+      margin-top: 50px;
+    }
+    .output-box {
+      min-height: 150px;
+      padding: 15px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+    video {
+      border: 2px solid #444;
+      border-radius: 10px;
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-center mb-4">SecureVoice Communication Interface</h1>
+
+    <div class="mb-3">
+      <label for="inputMode" class="form-label">Select Input Mode:</label>
+      <select class="form-select" id="inputMode" onchange="switchInputMode()">
+        <option value="voice">Voice Input</option>
+        <option value="gesture">Gesture Input</option>
+      </select>
+    </div>
+
+    <div id="voiceSection" class="mb-3">
+      <button class="btn btn-primary" onclick="startListening()">Start Voice Input</button>
+      <div id="voiceInput" class="mt-2 output-box"></div>
+    </div>
+
+    <div id="gestureSection" class="mb-3" style="display: none;">
+      <video id="webcam" autoplay></video>
+      <div id="gestureOutput" class="mt-2 output-box"></div>
+    </div>
+
+    <h5 class="mt-4">Encrypted Text</h5>
+    <div id="encryptedText" class="output-box"></div>
+
+    <h5 class="mt-4">Decrypted Text</h5>
+    <div id="decryptedText" class="output-box"></div>
+  </div>
+
+  <script src="/static/script.js"></script>
 </body>
 </html>
