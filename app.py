@@ -1,45 +1,88 @@
+import cv2
+import mediapipe as mp
+import numpy as np
 from flask import Flask, render_template, request, jsonify
-from Crypto.Cipher import AES
-import base64
-import os
+import threading
 
 app = Flask(__name__)
 
-# Encryption key and padding
-key = b'ThisIsASecretKey'
-BLOCK_SIZE = AES.block_size
-pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * chr(BLOCK_SIZE - len(s) % BLOCK_SIZE)
-unpad = lambda s: s[:-ord(s[len(s)-1:])]
+mp_hands = mp.solutions.hands
+mp_drawing = mp.solutions.drawing_utils
+hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.7)
 
-def encrypt(raw):
-    raw = pad(raw)
-    cipher = AES.new(key, AES.MODE_ECB)
-    encrypted = base64.b64encode(cipher.encrypt(raw.encode()))
-    return encrypted.decode()
+recognized_letter = ""
 
-def decrypt(enc):
-    enc = base64.b64decode(enc)
-    cipher = AES.new(key, AES.MODE_ECB)
-    decrypted = unpad(cipher.decrypt(enc).decode())
-    return decrypted
+def detect_letter_from_landmarks(landmarks):
+    fingers_up = []
+
+    fingers_up.append(landmarks[4].x < landmarks[3].x)
+
+    fingers_up.append(landmarks[8].y < landmarks[6].y)
+
+    fingers_up.append(landmarks[12].y < landmarks[10].y)
+
+    fingers_up.append(landmarks[16].y < landmarks[14].y)
+
+    fingers_up.append(landmarks[20].y < landmarks[18].y)
+
+    if fingers_up == [False, True, True, False, False]:
+        return "V"
+    elif fingers_up == [False, True, False, False, False]:
+        return "I"
+    elif fingers_up == [True, True, True, True, True]:
+        return "O"
+    else:
+        return ""
+
+def capture_gesture():
+    global recognized_letter
+    cap = cv2.VideoCapture(0)
+
+    if not cap.isOpened():
+        print("Webcam not accessible")
+        recognized_letter = "Error"
+        return
+
+    while True:
+        success, image = cap.read()
+        if not success:
+            break
+
+        image = cv2.flip(image, 1)
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        results = hands.process(image_rgb)
+
+        if results.multi_hand_landmarks:
+            for hand_landmarks in results.multi_hand_landmarks:
+                mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+                recognized_letter = detect_letter_from_landmarks(hand_landmarks.landmark)
+                if recognized_letter:
+                    break
+
+        if recognized_letter:
+            cv2.putText(image, f'Letter: {recognized_letter}', (10, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+
+        cv2.imshow('Gesture Detection', image)
+        if recognized_letter or (cv2.waitKey(5) & 0xFF == 27):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
 
 @app.route('/')
-def home():
+def index():
     return render_template('index.html')
 
-@app.route('/encrypt', methods=['POST'])
-def encrypt_message():
-    data = request.json
-    message = data['message']
-    encrypted = encrypt(message)
-    return jsonify({'encrypted': encrypted})
+@app.route('/gesture', methods=['POST'])
+def gesture():
+    global recognized_letter
+    recognized_letter = ""
+    thread = threading.Thread(target=capture_gesture)
+    thread.start()
+    thread.join() 
 
-@app.route('/decrypt', methods=['POST'])
-def decrypt_message():
-    data = request.json
-    encrypted = data['encrypted']
-    decrypted = decrypt(encrypted)
-    return jsonify({'decrypted': decrypted})
+    return jsonify({'letter': recognized_letter})
 
 if __name__ == '__main__':
     app.run(debug=True)
