@@ -1,39 +1,52 @@
-# 🔐 SecureVoice - Assistive Communication System with Encryption & Gesture Support
+# 🛡️ SecureVoice – Assistive Communication System
 
-SecureVoice is a web-based assistive communication platform built with **Flask**, designed to help individuals who are unable to speak communicate through voice or hand gestures. It securely processes input using **AES encryption**, and then **decrypts and converts it to speech** output. It also supports **multilingual communication** and **offline usage** with Service Workers.
-
----
-
-## 🌟 Key Features
-
-- 🎤 **Voice Input** using Web Speech API (no extensions required)
-- ✋ **Real-Time Gesture Recognition** via webcam using MediaPipe Hands
-- 🔐 **AES Encryption/Decryption** of messages (client-side)
-- 🗣️ **Text-to-Speech Output** of decrypted messages
-- 🌐 **Multilingual Support** (English, Hindi, Spanish)
-- 📴 **Offline Mode** using Service Workers
-- 💻 **Clean, Responsive UI** using Bootstrap
+SecureVoice is a secure and intelligent communication system designed for mute individuals. It supports both **gesture-based** and **voice-based** input to convert user messages into encrypted format and display/decrypt them via a web interface.
 
 ---
 
 ## 📁 Folder Structure
 
 securevoice/
-├── app.py 
+├── app.py # Flask backend
 ├── templates/
-│ └── index.html 
+│ └── index.html # Formal HTML interface
 ├── static/
-│ ├── script.js 
-│ ├── crypto.js 
-│ └── service-worker.js 
-
+│ ├── script.js # JS logic for UI control and API calls
+│ ├── crypto.js # AES encryption/decryption frontend logic
+│ └── service-worker.js # Enables offline functionality
 
 ---
 
-## 🛠️ Setup Instructions
+## ✨ Features
 
-### 1. Clone the Repository
+- 🔠 Live Gesture Recognition (via webcam + Mediapipe)
+- 🎙️ Voice Input Recognition (via Web Speech API)
+- 🔐 AES Encryption and Decryption of inputs
+- 📢 Optional Text-to-Speech Output
+- 🧾 Formal User Interface with input display and status
+- 📴 Offline Mode Support via Service Worker
+
+---
+
+## 🔤 Supported Gestures (Demo)
+
+| Hand Sign Style | Letter Detected |
+|------------------|------------------|
+| ✌️ Index + Middle up | V |
+| ☝️ Only Index up     | I |
+| ✋ All Fingers up     | O |
+| 🤙 L shape (Index + Pinky) | L |
+| 👍👍👍👍 4 Fingers up | A |
+| ✊ Fist (No fingers up) | T |
+| 👍✌️ Thumb + Index | H |
+
+(*You can add more by customizing the `detect_letter_from_landmarks()` function in `app.py`*)
+
+---
+
+## ▶️ How to Run the Project
+
+### 1. Install Python dependencies:
 
 ```bash
-git clone https://github.com/yourusername/securevoice.git
-cd securevoice
+pip install flask opencv-python mediapipe
