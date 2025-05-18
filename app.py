@@ -14,30 +14,34 @@ hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_c
 recognized_letter = ""
 input_sequence = []
 
-# Gesture recognition for V, I, O, L, A, T, H (demo purpose)
+# Updated gesture recognition using landmark distances and basic angle logic
 def detect_letter_from_landmarks(landmarks):
-    fingers_up = []
+    thumb_tip = np.array([landmarks[4].x, landmarks[4].y])
+    index_tip = np.array([landmarks[8].x, landmarks[8].y])
+    middle_tip = np.array([landmarks[12].x, landmarks[12].y])
+    ring_tip = np.array([landmarks[16].x, landmarks[16].y])
+    pinky_tip = np.array([landmarks[20].x, landmarks[20].y])
 
-    fingers_up.append(landmarks[4].x < landmarks[3].x)      # Thumb
-    fingers_up.append(landmarks[8].y < landmarks[6].y)      # Index
-    fingers_up.append(landmarks[12].y < landmarks[10].y)    # Middle
-    fingers_up.append(landmarks[16].y < landmarks[14].y)    # Ring
-    fingers_up.append(landmarks[20].y < landmarks[18].y)    # Pinky
+    index_folded = landmarks[8].y > landmarks[6].y
+    middle_folded = landmarks[12].y > landmarks[10].y
+    ring_folded = landmarks[16].y > landmarks[14].y
+    pinky_folded = landmarks[20].y > landmarks[18].y
+    thumb_folded = landmarks[4].x > landmarks[3].x
 
-    if fingers_up == [False, True, True, False, False]:
-        return "V"
-    elif fingers_up == [False, True, False, False, False]:
-        return "I"
-    elif fingers_up == [True, True, True, True, True]:
-        return "O"
-    elif fingers_up == [False, True, False, True, True]:
+    if not index_folded and middle_folded and ring_folded and pinky_folded:
         return "L"
-    elif fingers_up == [False, True, True, True, True]:
+    elif not index_folded and not middle_folded and not ring_folded and not pinky_folded:
         return "A"
-    elif fingers_up == [False, False, False, False, False]:
+    elif not index_folded and middle_folded and ring_folded and pinky_folded:
+        return "I"
+    elif not thumb_folded and not index_folded and not middle_folded and not ring_folded and not pinky_folded:
+        return "O"
+    elif index_folded and middle_folded and ring_folded and pinky_folded:
         return "T"
-    elif fingers_up == [True, True, False, False, False]:
+    elif not thumb_folded and index_folded and middle_folded and ring_folded and pinky_folded:
         return "H"
+    elif not index_folded and not middle_folded and ring_folded and pinky_folded:
+        return "V"
     else:
         return ""
 
@@ -52,7 +56,6 @@ def capture_gesture():
 
     start_time = time.time()
     timeout = 10
-    local_recognized_letter = ""
 
     while time.time() - start_time < timeout:
         success, image = cap.read()
@@ -66,18 +69,16 @@ def capture_gesture():
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-                current_letter = detect_letter_from_landmarks(hand_landmarks.landmark)
-                if current_letter and current_letter != local_recognized_letter:
-                    local_recognized_letter = current_letter
-                    recognized_letter = local_recognized_letter
+                recognized_letter = detect_letter_from_landmarks(hand_landmarks.landmark)
+                if recognized_letter:
                     break
 
-        if local_recognized_letter:
-            cv2.putText(image, f'Letter: {local_recognized_letter}', (10, 30),
+        if recognized_letter:
+            cv2.putText(image, f'Letter: {recognized_letter}', (10, 30),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
 
         cv2.imshow('Gesture Detection', image)
-        if cv2.waitKey(5) & 0xFF == 27 or local_recognized_letter:
+        if cv2.waitKey(5) & 0xFF == 27 or recognized_letter:
             break
 
     cap.release()
